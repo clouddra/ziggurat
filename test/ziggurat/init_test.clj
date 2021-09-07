@@ -17,8 +17,6 @@
 
   (:import (io.opentracing.mock MockTracer)))
 
-(def valid-modes-count 4)
-
 (defn exp [x n]
   (if (zero? n) 1
       (* x (exp x (dec n)))))
@@ -48,17 +46,7 @@
         (with-config
           (do (init/start #() {} {} [] nil)
               (init/stop stop-fn nil)
-              (is (false? @external-state)))))))
-
-  (testing "The actor stop fn stops before the ziggurat state"
-    (let [result (atom 1)]
-      (with-redefs [streams/start-streams (constantly nil)
-                    streams/stop-streams  (fn [_] (reset! result (* @result 2)))
-                    tracer/create-tracer  (fn [] (MockTracer.))]
-        (with-config
-          (do (init/start #() {} {} [] nil)
-              (init/stop #(reset! result (+ @result 3)) nil)
-              (is (= 8 @result))))))))
+              (is (false? @external-state))))))))
 
 (deftest stop-calls-idempotentcy-test
   (testing "The stop function should be idempotent"
