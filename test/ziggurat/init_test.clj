@@ -23,8 +23,7 @@
 
 (deftest start-calls-actor-start-fn-test
   (testing "The actor start fn starts before the ziggurat state and can read config"
-    (let [result                              (atom 1)
-          start-messaging-internal-call-count 2]
+    (let [result                              (atom 1)]
       (with-redefs [streams/start-streams (fn [_ _] (reset! result (* @result 2)))
                     streams/stop-streams  (constantly nil)
                     ;; will be called valid modes number of times
@@ -51,7 +50,7 @@
 (deftest stop-calls-idempotentcy-test
   (testing "The stop function should be idempotent"
     (let [result                              (atom 1)
-          stop-connection-internal-call-count 1]
+          expected-count 5]
       (with-redefs [streams/start-streams (constantly nil)
                     streams/stop-streams  (constantly nil)
                     rmqc/stop-connection  (fn [_] (reset! result (* @result 2)))
@@ -59,7 +58,7 @@
         (with-config
           (do (init/start #() {} {} [] nil)
               (init/stop #(reset! result (+ @result 3)) nil)
-              (is (= 8 @result))))))))
+              (is (= expected-count @result))))))))
 
 (deftest start-calls-make-queues-with-both-streams-and-batch-routes-test
   (testing "Start calls make queues with both streams and batch routes"
